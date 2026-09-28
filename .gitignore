@@ -12,6 +12,7 @@
 
 # Package Files #
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
@@ -31,5 +32,4 @@ dmplugin.properties
 dmplugin.xml
 module_dmplugin.xml
 target/
-gradle/
 .keystore
