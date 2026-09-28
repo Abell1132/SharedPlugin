@@ -32,13 +32,8 @@ val useLocalDarkBot = providers.gradleProperty("useLocalDarkBot")
     .getOrElse(true)
 
 dependencies {
-    api("eu.darkbot.DarkBotAPI", "darkbot-impl", "0.9.9")
-
-    if (useLocalDarkBot) {
-        compileOnly(files("../../../darkbot/build/libs/DarkBot-1.131.jar"))
-    } else {
-        api("eu.darkbot", "DarkBot", "dc48506543")
-    }
+    api("eu.darkbot.DarkBotAPI", "darkbot-impl", "0.9.11")
+    api("eu.darkbot", "DarkBot", "e787b48c23")
 }
 
 
