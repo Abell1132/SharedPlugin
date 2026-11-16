@@ -6,6 +6,7 @@
 	"supportedVersion": "1.132.0 alpha 2",
 	"basePackage": "dev.shared",
 	"features": [
+		"dev.shared.do_gamer.behaviour.AutoDispatch",
 		"dev.shared.do_gamer.behaviour.SimpleHealing",
 		"dev.shared.do_gamer.behaviour.OreSeller",
 		"dev.shared.do_gamer.behaviour.solaris_inc.SolarisInc",
