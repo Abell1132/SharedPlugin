@@ -23,8 +23,8 @@ public class AutoDispatch implements Behavior, Configurable<AutoDispatchConfig> 
     private String selectedName;
 
     public AutoDispatch(PluginAPI api) {
-        dispatch = api.requireAPI(DispatchManager.class);
-        rewards = api.requireAPI(DispatchPopupRewardGui.class);
+        dispatch = api.requireInstance(DispatchManager.class);
+        rewards = api.requireInstance(DispatchPopupRewardGui.class);
     }
 
     @Override
