@@ -41,7 +41,7 @@ range 1–1440). It runs while the bot is running, collects completed retrievers
 fills automatically detected free unlocked slots. It never buys slots or instantly
 completes dispatches. Other selected retrievers may cost Uridium and permits;
 unavailable or unaffordable choices wait until the next check without substitution.
-Each UI pass is limited to 60 seconds; failed hires wait until the next check.
+Each UI pass is limited to 120 seconds; failed hires wait until the next check.
 
 Mechanics: [official Retriever & Gate Dispatch FAQ](https://board-en.darkorbit.com/threads/faq-retriever-gate-dispatch.127317/).
 The feature uses the core DispatchManager for UI actions because DispatchAPI

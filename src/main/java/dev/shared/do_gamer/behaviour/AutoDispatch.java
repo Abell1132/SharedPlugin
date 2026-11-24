@@ -14,11 +14,13 @@ import eu.darkbot.api.managers.DispatchAPI;
 @Feature(name = "Auto Dispatch", description = "Collects completed retrievers and fills unlocked slots with the selected dispatch.")
 public class AutoDispatch implements Behavior, Configurable<AutoDispatchConfig> {
     private enum Step { IDLE, OPEN, COLLECT, AVAILABLE, SELECT, HIRE, CONFIRM, VERIFY }
+    private static final long HIRE_TIMEOUT_MS = 10_000;
+
     private final DispatchManager dispatch;
     private final DispatchPopupRewardGui rewards;
     private AutoDispatchConfig config;
     private Step step = Step.IDLE;
-    private long nextCheck, nextAction, deadline;
+    private long nextCheck, nextAction, deadline, hireDeadline;
     private int slotsBefore;
     private String selectedName;
 
@@ -44,7 +46,7 @@ public class AutoDispatch implements Behavior, Configurable<AutoDispatchConfig> 
         if (step == Step.IDLE) {
             if (now < nextCheck) return;
             selectedName = config.retriever;
-            deadline = now + 60_000;
+            deadline = now + 120_000;
             step = Step.OPEN;
         }
         if (now >= deadline || !java.util.Objects.equals(selectedName, config.retriever)) {
@@ -68,8 +70,7 @@ public class AutoDispatch implements Behavior, Configurable<AutoDispatchConfig> 
             case SELECT: select(now); break;
             case HIRE: hire(now); break;
             case CONFIRM:
-                dispatch.clickAcceptPopup();
-                step = Step.VERIFY;
+                confirm(now);
                 break;
             case VERIFY: verify(now); break;
             default: break;
@@ -115,17 +116,31 @@ public class AutoDispatch implements Behavior, Configurable<AutoDispatchConfig> 
             return;
         }
         slotsBefore = dispatch.getAvailableSlots();
-        if (dispatch.clickHire()) step = Step.CONFIRM;
+        if (dispatch.clickHire()) {
+            hireDeadline = now + HIRE_TIMEOUT_MS;
+            step = Step.CONFIRM;
+        }
+    }
+
+    private void confirm(long now) {
+        if (now >= hireDeadline) {
+            finish(now);
+        } else if (dispatch.getAvailableSlots() < slotsBefore) {
+            step = Step.VERIFY;
+        } else if (dispatch.clickAcceptPopup()) {
+            hireDeadline = now + HIRE_TIMEOUT_MS;
+            step = Step.VERIFY;
+        }
     }
 
     private void verify(long now) {
-        dispatch.clickCloseOkPopup();
-        // Never repeat an unacknowledged hire: failed/late requests wait until next check.
-        if (dispatch.getAvailableSlots() >= slotsBefore) {
+        boolean closingPopup = dispatch.clickCloseOkPopup();
+        if (!closingPopup && dispatch.getAvailableSlots() < slotsBefore) {
+            step = Step.COLLECT;
+        } else if (now >= hireDeadline) {
+            // An unacknowledged hire must never trigger another purchase in this pass.
             finish(now);
-            return;
         }
-        step = Step.COLLECT;
     }
 
     private void finish(long now) {
