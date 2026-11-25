@@ -48,6 +48,7 @@ public class AutoDispatch implements Behavior, Configurable<AutoDispatchConfig> 
             selectedName = config.retriever;
             deadline = now + 120_000;
             step = Step.OPEN;
+            log("checking " + selectedName);
         }
         if (now >= deadline || !java.util.Objects.equals(selectedName, config.retriever)) {
             finish(now);
@@ -117,6 +118,7 @@ public class AutoDispatch implements Behavior, Configurable<AutoDispatchConfig> 
         }
         slotsBefore = dispatch.getAvailableSlots();
         if (dispatch.clickHire()) {
+            log("clicked Hire with " + slotsBefore + " free slots");
             hireDeadline = now + HIRE_TIMEOUT_MS;
             step = Step.CONFIRM;
         }
@@ -124,10 +126,12 @@ public class AutoDispatch implements Behavior, Configurable<AutoDispatchConfig> 
 
     private void confirm(long now) {
         if (now >= hireDeadline) {
+            log("timed out waiting for confirmation");
             finish(now);
         } else if (dispatch.getAvailableSlots() < slotsBefore) {
             step = Step.VERIFY;
         } else if (dispatch.clickAcceptPopup()) {
+            log("clicked confirmation");
             hireDeadline = now + HIRE_TIMEOUT_MS;
             step = Step.VERIFY;
         }
@@ -144,8 +148,14 @@ public class AutoDispatch implements Behavior, Configurable<AutoDispatchConfig> 
     }
 
     private void finish(long now) {
+        log("finished at " + step + " with " + dispatch.getAvailableSlots()
+                + "/" + dispatch.getTotalSlots() + " slots free");
         cancel();
         nextCheck = now + Math.max(1, Math.min(1440, config.intervalMinutes)) * 60_000L;
+    }
+
+    private void log(String message) {
+        System.out.println("[Auto Dispatch] " + message);
     }
 
     private void cancel() {
